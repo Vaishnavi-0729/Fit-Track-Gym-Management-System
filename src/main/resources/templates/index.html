@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack | Gym Membership Management</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <!-- CSRF tokens exposed to script.js -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-shell">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="dumbbell">🏋️</span>
+            <span>FitTrack</span>
+        </div>
+        <nav class="nav">
+            <button class="nav-item active" data-view="dashboard">📊 Dashboard</button>
+            <button class="nav-item" data-view="members">🧑‍🤝‍🧑 Members</button>
+            <button class="nav-item" data-view="plans">📋 Membership Plans</button>
+        </nav>
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit" class="btn btn-logout">🚪 Logout</button>
+        </form>
+    </aside>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="main-content">
+
+        <!-- ---------- DASHBOARD VIEW ---------- -->
+        <section id="view-dashboard" class="view active">
+            <h1>Dashboard</h1>
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <span class="stat-value" id="statTotal">0</span>
+                    <span class="stat-label">Total Members</span>
+                </div>
+                <div class="stat-card stat-active">
+                    <span class="stat-value" id="statActive">0</span>
+                    <span class="stat-label">Active</span>
+                </div>
+                <div class="stat-card stat-expired">
+                    <span class="stat-value" id="statExpired">0</span>
+                    <span class="stat-label">Expired</span>
+                </div>
+                <div class="stat-card stat-plans">
+                    <span class="stat-value" id="statPlans">0</span>
+                    <span class="stat-label">Membership Plans</span>
+                </div>
+            </div>
+
+            <h2>Recently Joined Members</h2>
+            <div class="table-wrapper">
+                <table class="data-table" id="recentMembersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th><th>Email</th><th>Plan</th><th>Joining Date</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ---------- MEMBERS VIEW ---------- -->
+        <section id="view-members" class="view">
+            <div class="view-header">
+                <h1>Members</h1>
+                <button class="btn btn-primary" id="btnAddMember">+ Register Member</button>
+            </div>
+
+            <div class="toolbar">
+                <input type="text" id="memberSearch" placeholder="🔍 Search by name, email or phone...">
+                <select id="statusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="EXPIRED">Expired</option>
+                    <option value="CANCELLED">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="membersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th><th>Email</th><th>Phone</th><th>Plan</th>
+                            <th>Joining Date</th><th>End Date</th><th>Status</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ---------- PLANS VIEW ---------- -->
+        <section id="view-plans" class="view">
+            <div class="view-header">
+                <h1>Membership Plans</h1>
+                <button class="btn btn-primary" id="btnAddPlan">+ Add Plan</button>
+            </div>
+
+            <div class="plan-cards" id="planCards"></div>
+        </section>
+
+    </main>
+</div>
+
+<!-- ============ MEMBER MODAL ============ -->
+<div class="modal-overlay" id="memberModalOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="memberModalTitle">Register Member</h2>
+            <button class="modal-close" data-close="memberModalOverlay">&times;</button>
+        </div>
+        <form id="memberForm">
+            <input type="hidden" id="memberId">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number *</label>
+                    <input type="text" id="phoneNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dateOfBirth">Date of Birth</label>
+                    <input type="date" id="dateOfBirth">
+                </div>
+                <div class="form-group">
+                    <label for="joiningDate">Joining Date *</label>
+                    <input type="date" id="joiningDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="membershipPlanId">Membership Plan *</label>
+                    <select id="membershipPlanId" required></select>
+                </div>
+                <div class="form-group form-group-full">
+                    <label for="address">Address</label>
+                    <textarea id="address" rows="2"></textarea>
+                </div>
+            </div>
+            <div id="memberFormError" class="form-error"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" data-close="memberModalOverlay">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ PLAN MODAL ============ -->
+<div class="modal-overlay" id="planModalOverlay">
+    <div class="modal modal-small">
+        <div class="modal-header">
+            <h2 id="planModalTitle">Add Membership Plan</h2>
+            <button class="modal-close" data-close="planModalOverlay">&times;</button>
+        </div>
+        <form id="planForm">
+            <input type="hidden" id="planId">
+            <div class="form-group">
+                <label for="planName">Plan Name *</label>
+                <input type="text" id="planName" required>
+            </div>
+            <div class="form-group">
+                <label for="planDuration">Duration (months) *</label>
+                <input type="number" id="planDuration" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="planPrice">Price ($) *</label>
+                <input type="number" id="planPrice" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="planDescription">Description</label>
+                <textarea id="planDescription" rows="2"></textarea>
+            </div>
+            <div id="planFormError" class="form-error"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" data-close="planModalOverlay">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Plan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

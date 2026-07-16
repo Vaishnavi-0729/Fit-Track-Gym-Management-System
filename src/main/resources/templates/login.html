@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | FitTrack Gym Management</title>
+
+    <!-- Website Tab Logo -->
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="login-body">
+
+    <!-- Background Video -->
+    <video autoplay muted loop playsinline id="bg-video">
+        <source th:src="@{/videos/gym-bg.mp4}" type="video/mp4">
+    </video>
+
+    <!-- Login Card -->
+    <div class="login-card">
+
+        <!-- Logo -->
+        <div class="login-logo">
+            <img th:src="@{/images/logo.png}" class="login-logo-img" alt="FitTrack Logo">
+            <h1>FitTrack</h1>
+            <p>Gym Membership Management System</p>
+        </div>
+
+        <!-- Login Form -->
+        <form th:action="@{/login}" method="post" class="login-form">
+
+            <!-- Registration Success -->
+            <div th:if="${param.registered}" class="alert alert-success">
+                🎉 Registration successful! Please login with your new account.
+            </div>
+
+            <!-- Login Error -->
+            <div th:if="${param.error}" class="alert alert-error">
+                Invalid username or password.
+            </div>
+
+            <!-- Logout Success -->
+            <div th:if="${param.logout}" class="alert alert-success">
+                You have been logged out successfully.
+            </div>
+
+            <label for="username">Username</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter your username"
+                required
+                autofocus>
+
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                required>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                Sign In
+            </button>
+
+        </form>
+
+        <!-- Register Link -->
+        <p class="register-link">
+            Don't have an account?
+            <a th:href="@{/register}">Create Account</a>
+        </p>
+
+    </div>
+
+</body>
+</html>
